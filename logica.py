@@ -29,7 +29,7 @@ def traducir_texto(texto, significados):
 
     letras_permitidas = {'A','D','E','J','K','M','N','O','S','W'}
     if not set(texto).issubset(letras_permitidas):
-        return "Zenakud solo usa 8 letras para escribir: D,E,J,K,M,N,O,W prueba intentando con una combinación de estas letras."
+        return "Zenakud solo usa 10 letras para escribir: D,E,J,K,M,N,O,W prueba intentando con una combinación de estas letras."
     
     traduccion = []
     i = 0
