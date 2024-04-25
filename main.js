@@ -1,6 +1,6 @@
 async function traducir() {
     let texto = document.getElementById('inputText').value;
-    let response = await fetch('https://traductorzenakud-production.up.railway.app/traducir', {
+    let response = await fetch('https://traductorzenakud-production.up.railway.app', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
