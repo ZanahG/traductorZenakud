@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__, static_folder='.', template_folder='.')
+CORS(app)
 
 # Función para cargar los significados desde un archivo
 def cargar_significados(archivo):
