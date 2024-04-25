@@ -1,8 +1,11 @@
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
+import os
 
 app = Flask(__name__, static_folder='.', template_folder='.')
 CORS(app)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+words_file_path = os.path.join(BASE_DIR, 'words.txt')
 
 # Función para cargar los significados desde un archivo
 def cargar_significados(archivo):
@@ -17,6 +20,9 @@ def cargar_significados(archivo):
     except Exception as e:
         print(f"Error al cargar el archivo: {e}")
     return significados
+
+significados = cargar_significados(words_file_path)
+
 
 # Función para traducir el texto usando los significados cargados
 def traducir_texto(texto, significados):
@@ -50,7 +56,6 @@ def index():
 def traducir():
     data = request.get_json()
     texto = data.get('texto', '')
-    # Suponiendo que 'archivo.txt' está en el mismo directorio que este script
     significados = cargar_significados('words.txt')
     traduccion = traducir_texto(texto, significados)
     return jsonify({'traduccion': traduccion})
