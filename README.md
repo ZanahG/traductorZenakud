@@ -1,0 +1,2 @@
+# traductorZenakud
+Traductor de Zancudos
