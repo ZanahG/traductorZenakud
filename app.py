@@ -1,13 +1,8 @@
-from flask import Flask, render_template, request, jsonify
-from flask_cors import CORS # type: ignore
 import os
+from flask import Flask, render_template, request, jsonify
 
-app = Flask(__name__, static_folder='.', template_folder='.')
-CORS(app)
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-words_file_path = os.path.join(BASE_DIR, 'words.txt')
+app = Flask(__name__, static_folder='static', template_folder='templates')
 
-# Función para cargar los significados desde un archivo
 def cargar_significados(archivo):
     significados = {}
     try:
@@ -21,31 +16,36 @@ def cargar_significados(archivo):
         print(f"Error al cargar el archivo: {e}")
     return significados
 
-significados = cargar_significados(words_file_path)
-
-
-# Función para traducir el texto usando los significados cargados
 def traducir_texto(texto, significados):
+    letras_permitidas = {'A', 'D', 'E', 'J', 'K', 'M', 'N', 'O', 'S', 'W', 'Q'}
+    texto = texto.upper() 
+    texto_set = set(texto)
+    letras_no_permitidas = texto_set - letras_permitidas
 
-    letras_permitidas = {'A','D','E','J','K','M','N','O','S','W'}
-    if not set(texto).issubset(letras_permitidas):
-        return "Zenakud solo usa 10 letras para escribir: D,E,J,K,M,N,O,W prueba intentando con una combinación de estas letras."
-    
+    if letras_no_permitidas:
+        letras_no_permitidas_str = ', '.join(sorted(letras_no_permitidas))
+        return f"Zenakud solo usa las letras: A, D, E, J, K, M, N, O, S, W. Por favor, elimina las siguientes letras: {letras_no_permitidas_str}"
+
     traduccion = []
     i = 0
     while i < len(texto):
-        # Probar combinaciones de longitud decreciente para encontrar la más larga posible
+        parte = texto[i:min(i+5, len(texto))] 
         encontrado = False
-        for j in range(min(8, len(texto) - i), 0, -1):  # Asumiendo que la combinación más larga tiene hasta 6 letras
-            parte = texto[i:i+j]
-            if parte in significados:
-                traduccion.append(significados[parte])
-                i += j
-                encontrado = True
-                break
-        if not encontrado:  # Si no se encuentra, avanzar un carácter
-            traduccion.append(texto[i])
+
+        for j in range(len(parte), 0, -1):
+            segmento = texto[i:i+j]
+            if segmento in significados:
+                if (len(segmento) == 1 or 
+                    len(segmento) == 2 or 
+                    (3 <= len(segmento) <= 5 and not (segmento[-1] == segmento[-2] == segmento[-3]))):
+                    traduccion.append(significados[segmento])
+                    i += j
+                    encontrado = True
+                    break
+
+        if not encontrado: 
             i += 1
+
     return ' '.join(traduccion)
 
 @app.route('/')
@@ -57,8 +57,10 @@ def traducir():
     data = request.get_json()
     texto = data.get('texto', '')
     significados = cargar_significados('words.txt')
+    texto_set = set(texto.upper())
     traduccion = traducir_texto(texto, significados)
     return jsonify({'traduccion': traduccion})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
